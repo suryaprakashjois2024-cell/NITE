@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="N.I.T.E. — Network Intrusion & Threat Evaluation System. Real-time ML-powered network anomaly detection dashboard." />
+  <title>N.I.T.E. — Network Intrusion & Threat Evaluation</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ══ Navigation ══════════════════════════════════════════════════════════ -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-brand">
+      <div class="nav-logo">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="14,2 26,8 26,20 14,26 2,20 2,8" fill="none" stroke="url(#hex-grad)" stroke-width="2"/>
+          <polygon points="14,7 21,11 21,17 14,21 7,17 7,11" fill="url(#hex-inner)" opacity="0.5"/>
+          <circle cx="14" cy="14" r="3" fill="url(#hex-grad)"/>
+          <defs>
+            <linearGradient id="hex-grad" x1="2" y1="2" x2="26" y2="26" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#6366f1"/>
+              <stop offset="1" stop-color="#06b6d4"/>
+            </linearGradient>
+            <linearGradient id="hex-inner" x1="7" y1="7" x2="21" y2="21" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#6366f1" stop-opacity="0.6"/>
+              <stop offset="1" stop-color="#06b6d4" stop-opacity="0.6"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <span class="nav-title">N<span class="dot">.</span>I<span class="dot">.</span>T<span class="dot">.</span>E<span class="dot">.</span></span>
+      <span class="nav-subtitle">Threat Evaluation</span>
+    </div>
+
+    <div class="nav-links">
+      <a href="#home" class="nav-link active" id="nav-home">Home</a>
+      <a href="#analyze" class="nav-link" id="nav-analyze">Analyze</a>
+      <a href="#analytics" class="nav-link" id="nav-analytics">Analytics</a>
+      <a href="#compare" class="nav-link" id="nav-compare">Compare</a>
+      <a href="#whatif" class="nav-link" id="nav-whatif">What-If</a>
+      <a href="#batch" class="nav-link" id="nav-batch">Batch</a>
+    </div>
+
+    <div class="nav-status">
+      <span class="status-dot" id="api-status-dot"></span>
+      <span class="status-label" id="api-status-label">Connecting…</span>
+    </div>
+  </nav>
+
+  <!-- ══ Hero ════════════════════════════════════════════════════════════════ -->
+  <section class="hero" id="home">
+    <div class="hero-bg">
+      <div class="grid-overlay"></div>
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="pulse-dot"></span>
+        ML-Powered Network Intelligence
+      </div>
+      <h1 class="hero-title">
+        Network Intrusion &amp;<br/>
+        <span class="gradient-text">Threat Evaluation</span>
+      </h1>
+      <p class="hero-desc">
+        Real-time anomaly detection across your network telemetry.
+        Powered by a RandomForest ensemble trained on 5,000 synthetic connection records —
+        classifying threats as <strong>Normal</strong>, <strong>Probe</strong>, or <strong>DoS</strong>.
+      </p>
+      <div class="hero-stats">
+        <div class="stat-card">
+          <span class="stat-value">95.1%</span>
+          <span class="stat-label">Test Macro-F1</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value">250</span>
+          <span class="stat-label">RF Estimators</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value">5K</span>
+          <span class="stat-label">Training Records</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value">3</span>
+          <span class="stat-label">Threat Tiers</span>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <a href="#analyze" class="btn btn-primary" id="hero-analyze-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          Start Analyzing
+        </a>
+        <a href="#analytics" class="btn btn-ghost" id="hero-analytics-btn">View Analytics</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ Analyze Section ══════════════════════════════════════════════════════ -->
+  <section class="section" id="analyze">
+    <div class="section-header">
+      <div class="section-tag">Single Record</div>
+      <h2 class="section-title">Connection Analyzer</h2>
+      <p class="section-desc">Input five telemetry parameters and get an instant ML threat classification.</p>
+    </div>
+
+    <div class="analyzer-layout">
+      <!-- Form -->
+      <div class="glass-card form-card">
+        <div class="card-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>
+          <span>Telemetry Parameters</span>
+        </div>
+
+        <form id="analyze-form" autocomplete="off">
+          <div class="form-grid">
+
+            <div class="form-group">
+              <label class="form-label" for="connection_duration">
+                Connection Duration
+                <span class="form-hint">0 – 3600 s</span>
+              </label>
+              <div class="input-wrap">
+                <input
+                  type="number" id="connection_duration" name="connection_duration"
+                  class="form-input" placeholder="e.g. 12.5"
+                  min="0" max="3600" step="0.01" required
+                />
+                <span class="input-unit">sec</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="protocol_type">
+                Protocol Type
+                <span class="form-hint">TCP / UDP / ICMP</span>
+              </label>
+              <div class="select-wrap">
+                <select id="protocol_type" name="protocol_type" class="form-select" required>
+                  <option value="" disabled selected>Select protocol…</option>
+                  <option value="TCP">TCP</option>
+                  <option value="UDP">UDP</option>
+                  <option value="ICMP">ICMP</option>
+                </select>
+                <svg class="select-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="src_bytes">
+                Source Bytes
+                <span class="form-hint">0 – 10,000,000</span>
+              </label>
+              <div class="input-wrap">
+                <input
+                  type="number" id="src_bytes" name="src_bytes"
+                  class="form-input" placeholder="e.g. 1024"
+                  min="0" max="10000000" step="1" required
+                />
+                <span class="input-unit">B</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="dst_bytes">
+                Destination Bytes
+                <span class="form-hint">0 – 10,000,000</span>
+              </label>
+              <div class="input-wrap">
+                <input
+                  type="number" id="dst_bytes" name="dst_bytes"
+                  class="form-input" placeholder="e.g. 2048"
+                  min="0" max="10000000" step="1" required
+                />
+                <span class="input-unit">B</span>
+              </div>
+            </div>
+
+            <div class="form-group full-width">
+              <label class="form-label" for="failed_logins">
+                Failed Logins
+                <span class="form-hint">0 – 10</span>
+              </label>
+              <div class="slider-wrap">
+                <input
+                  type="range" id="failed_logins_slider" name="failed_logins_slider"
+                  class="form-slider" min="0" max="10" step="1" value="0"
+                />
+                <input
+                  type="number" id="failed_logins" name="failed_logins"
+                  class="form-input slider-num" min="0" max="10" step="1" value="0" required
+                />
+              </div>
+              <div class="slider-labels">
+                <span>0</span><span>2</span><span>4</span><span>6</span><span>8</span><span>10</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" id="fill-normal-btn" class="btn btn-sm btn-ghost">
+              Load Normal Example
+            </button>
+            <button type="button" id="fill-probe-btn" class="btn btn-sm btn-ghost">
+              Load Probe Example
+            </button>
+            <button type="button" id="fill-dos-btn" class="btn btn-sm btn-ghost">
+              Load DoS Example
+            </button>
+            <button type="submit" id="analyze-submit-btn" class="btn btn-primary ml-auto">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Analyze
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Result Card -->
+      <div class="result-panel" id="result-panel">
+        <!-- Idle state -->
+        <div class="result-idle" id="result-idle">
+          <div class="idle-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <p>Submit telemetry data to receive a threat classification.</p>
+        </div>
+
+        <!-- Loading state -->
+        <div class="result-loading hidden" id="result-loading">
+          <div class="spinner"></div>
+          <p>Analyzing connection…</p>
+        </div>
+
+        <!-- Result state -->
+        <div class="result-data hidden" id="result-data">
+          <div class="result-tier-card" id="tier-card">
+            <div class="tier-icon" id="tier-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div class="tier-info">
+              <div class="tier-label">Predicted Threat Tier</div>
+              <div class="tier-value" id="tier-value">—</div>
+            </div>
+            <div class="tier-badge" id="tier-badge">—</div>
+          </div>
+
+          <!-- Probability Bars -->
+          <div class="prob-section">
+            <div class="prob-title">Class Probability Distribution</div>
+            <div class="prob-bars" id="prob-bars"></div>
+          </div>
+
+          <!-- Advisory -->
+          <div class="advisory-callout" id="advisory-callout">
+            <div class="advisory-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <p class="advisory-text" id="advisory-text"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ Analytics Section ════════════════════════════════════════════════════ -->
+  <section class="section section-dark" id="analytics">
+    <div class="section-header">
+      <div class="section-tag">Model Benchmarks</div>
+      <h2 class="section-title">Performance Analytics</h2>
+      <p class="section-desc">5-Fold Cross-Validation vs. Test Macro-F1 scores across all five evaluated classifiers (Table 7.1).</p>
+    </div>
+
+    <div class="analytics-layout">
+      <div class="glass-card chart-card">
+        <div class="card-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <span>Macro-F1 Score Comparison</span>
+          <div class="chart-legend">
+            <span class="legend-dot" style="background:#6366f1"></span>5-Fold CV
+            <span class="legend-dot" style="background:#06b6d4; margin-left:12px"></span>Test Set
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="benchmarkChart" aria-label="Model benchmark chart"></canvas>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card metric-rf">
+          <div class="metric-rank">#1</div>
+          <div class="metric-name">Random Forest</div>
+          <div class="metric-scores">
+            <div class="metric-score">
+              <span class="ms-label">CV</span>
+              <span class="ms-value">0.952</span>
+            </div>
+            <div class="metric-score">
+              <span class="ms-label">Test</span>
+              <span class="ms-value">0.951</span>
+            </div>
+          </div>
+          <div class="metric-bar-bg"><div class="metric-bar-fill" style="width:95.1%"></div></div>
+        </div>
+
+        <div class="metric-card metric-gb">
+          <div class="metric-rank">#2</div>
+          <div class="metric-name">Gradient Boosting</div>
+          <div class="metric-scores">
+            <div class="metric-score">
+              <span class="ms-label">CV</span>
+              <span class="ms-value">0.948</span>
+            </div>
+            <div class="metric-score">
+              <span class="ms-label">Test</span>
+              <span class="ms-value">0.947</span>
+            </div>
+          </div>
+          <div class="metric-bar-bg"><div class="metric-bar-fill" style="width:94.7%"></div></div>
+        </div>
+
+        <div class="metric-card metric-dt">
+          <div class="metric-rank">#3</div>
+          <div class="metric-name">Decision Tree</div>
+          <div class="metric-scores">
+            <div class="metric-score">
+              <span class="ms-label">CV</span>
+              <span class="ms-value">0.894</span>
+            </div>
+            <div class="metric-score">
+              <span class="ms-label">Test</span>
+              <span class="ms-value">0.887</span>
+            </div>
+          </div>
+          <div class="metric-bar-bg"><div class="metric-bar-fill" style="width:88.7%"></div></div>
+        </div>
+
+        <div class="metric-card metric-knn">
+          <div class="metric-rank">#4</div>
+          <div class="metric-name">K-Nearest Neighbors</div>
+          <div class="metric-scores">
+            <div class="metric-score">
+              <span class="ms-label">CV</span>
+              <span class="ms-value">0.876</span>
+            </div>
+            <div class="metric-score">
+              <span class="ms-label">Test</span>
+              <span class="ms-value">0.874</span>
+            </div>
+          </div>
+          <div class="metric-bar-bg"><div class="metric-bar-fill" style="width:87.4%"></div></div>
+        </div>
+
+        <div class="metric-card metric-lr">
+          <div class="metric-rank">#5</div>
+          <div class="metric-name">Logistic Regression</div>
+          <div class="metric-scores">
+            <div class="metric-score">
+              <span class="ms-label">CV</span>
+              <span class="ms-value">0.812</span>
+            </div>
+            <div class="metric-score">
+              <span class="ms-label">Test</span>
+              <span class="ms-value">0.809</span>
+            </div>
+          </div>
+          <div class="metric-bar-bg"><div class="metric-bar-fill" style="width:80.9%"></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ Compare Section ══════════════════════════════════════════════════════ -->
+  <section class="section" id="compare">
+    <div class="section-header">
+      <div class="section-tag">Side-by-Side</div>
+      <h2 class="section-title">Model Comparison</h2>
+      <p class="section-desc">Detailed performance breakdown table across all evaluated classifiers.</p>
+    </div>
+
+    <div class="glass-card table-card">
+      <div class="card-header">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
+        <span>Table 7.1 — Classifier Benchmark Results</span>
+      </div>
+      <div class="table-wrap">
+        <table class="compare-table" id="compare-table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Model</th>
+              <th>5-Fold CV Macro-F1</th>
+              <th>Test Macro-F1</th>
+              <th>Δ Generalization</th>
+              <th>Performance</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="highlight-row">
+              <td><span class="rank-badge rank-1">1</span></td>
+              <td><strong>Random Forest</strong> <span class="chip chip-primary">Selected</span></td>
+              <td>0.952</td>
+              <td>0.951</td>
+              <td class="delta-good">−0.001</td>
+              <td><div class="table-bar"><div class="table-bar-fill" style="width:95.1%"></div></div></td>
+            </tr>
+            <tr>
+              <td><span class="rank-badge rank-2">2</span></td>
+              <td>Gradient Boosting</td>
+              <td>0.948</td>
+              <td>0.947</td>
+              <td class="delta-good">−0.001</td>
+              <td><div class="table-bar"><div class="table-bar-fill" style="width:94.7%"></div></div></td>
+            </tr>
+            <tr>
+              <td><span class="rank-badge rank-3">3</span></td>
+              <td>Decision Tree</td>
+              <td>0.894</td>
+              <td>0.887</td>
+              <td class="delta-warn">−0.007</td>
+              <td><div class="table-bar"><div class="table-bar-fill" style="width:88.7%"></div></div></td>
+            </tr>
+            <tr>
+              <td><span class="rank-badge rank-4">4</span></td>
+              <td>K-Nearest Neighbors</td>
+              <td>0.876</td>
+              <td>0.874</td>
+              <td class="delta-good">−0.002</td>
+              <td><div class="table-bar"><div class="table-bar-fill" style="width:87.4%"></div></div></td>
+            </tr>
+            <tr>
+              <td><span class="rank-badge rank-5">5</span></td>
+              <td>Logistic Regression</td>
+              <td>0.812</td>
+              <td>0.809</td>
+              <td class="delta-good">−0.003</td>
+              <td><div class="table-bar"><div class="table-bar-fill" style="width:80.9%"></div></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ What-If Section ══════════════════════════════════════════════════════ -->
+  <section class="section section-dark" id="whatif">
+    <div class="section-header">
+      <div class="section-tag">Scenario Simulation</div>
+      <h2 class="section-title">What-If Analysis</h2>
+      <p class="section-desc">Slide the parameters to see how individual feature changes shift threat classification in real time.</p>
+    </div>
+
+    <div class="whatif-layout">
+      <div class="glass-card whatif-controls">
+        <div class="card-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          <span>Adjust Parameters</span>
+        </div>
+
+        <div class="whatif-sliders">
+          <div class="wi-group">
+            <label>Connection Duration: <strong id="wi-dur-val">150</strong>s</label>
+            <input type="range" class="form-slider" id="wi-duration" min="0" max="3600" step="1" value="150" />
+          </div>
+          <div class="wi-group">
+            <label>Source Bytes: <strong id="wi-src-val">1,024</strong></label>
+            <input type="range" class="form-slider" id="wi-src" min="0" max="10000000" step="1000" value="1024" />
+          </div>
+          <div class="wi-group">
+            <label>Destination Bytes: <strong id="wi-dst-val">2,048</strong></label>
+            <input type="range" class="form-slider" id="wi-dst" min="0" max="10000000" step="1000" value="2048" />
+          </div>
+          <div class="wi-group">
+            <label>Failed Logins: <strong id="wi-fl-val">0</strong></label>
+            <input type="range" class="form-slider" id="wi-fl" min="0" max="10" step="1" value="0" />
+          </div>
+          <div class="wi-group">
+            <label>Protocol Type</label>
+            <div class="proto-toggle">
+              <button class="proto-btn active" id="wi-tcp" data-proto="TCP">TCP</button>
+              <button class="proto-btn" id="wi-udp" data-proto="UDP">UDP</button>
+              <button class="proto-btn" id="wi-icmp" data-proto="ICMP">ICMP</button>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary full-width" id="whatif-submit-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Run Simulation
+        </button>
+      </div>
+
+      <div class="glass-card whatif-result" id="whatif-result-card">
+        <div class="card-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>Simulation Result</span>
+        </div>
+        <div class="wi-idle" id="wi-idle">
+          <p>Adjust sliders and click <em>Run Simulation</em></p>
+        </div>
+        <div class="wi-output hidden" id="wi-output">
+          <div class="wi-tier" id="wi-tier-badge">—</div>
+          <div class="prob-bars" id="wi-prob-bars"></div>
+          <div class="advisory-callout" id="wi-advisory">
+            <div class="advisory-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <p id="wi-advisory-text"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ Batch Section ════════════════════════════════════════════════════════ -->
+  <section class="section" id="batch">
+    <div class="section-header">
+      <div class="section-tag">Bulk Processing</div>
+      <h2 class="section-title">Batch Analysis</h2>
+      <p class="section-desc">Paste multiple JSON connection records (one per line) for sequential analysis.</p>
+    </div>
+
+    <div class="glass-card batch-card">
+      <div class="card-header">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span>JSON Batch Input</span>
+        <button class="btn btn-sm btn-ghost ml-auto" id="batch-load-example-btn">Load Example</button>
+      </div>
+
+      <textarea
+        id="batch-input"
+        class="batch-textarea"
+        placeholder='Paste JSON records, one per line. Example:&#10;{"connection_duration": 12.5, "src_bytes": 1024, "dst_bytes": 2048, "failed_logins": 0, "protocol_type": "TCP"}&#10;{"connection_duration": 0.5, "src_bytes": 100, "dst_bytes": 0, "failed_logins": 5, "protocol_type": "UDP"}'
+        spellcheck="false"
+        rows="8"
+      ></textarea>
+
+      <div class="batch-actions">
+        <span class="batch-count" id="batch-count">0 records ready</span>
+        <button class="btn btn-primary" id="batch-submit-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+          Run Batch
+        </button>
+      </div>
+
+      <div class="batch-results hidden" id="batch-results">
+        <div class="batch-results-header">
+          <span>Batch Results</span>
+          <button class="btn btn-sm btn-ghost" id="batch-export-btn">Export CSV</button>
+        </div>
+        <div class="batch-results-list" id="batch-results-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ Footer ════════════════════════════════════════════════════════════════ -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-brand">
+        <span class="nav-title">N<span class="dot">.</span>I<span class="dot">.</span>T<span class="dot">.</span>E<span class="dot">.</span></span>
+        <p>Network Intrusion &amp; Threat Evaluation System</p>
+      </div>
+      <div class="footer-note">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Educational prototype. All predictions are secondary triage alerts — not automated blocking decisions.
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
